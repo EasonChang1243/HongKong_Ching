@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香港五日完美行程規劃互動儀表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background-color: #D97706; 
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .tab-btn:not(.active):hover {
+            background-color: #FDE68A;
+            color: #92400E;
+        }
+
+        /* 列印時隱藏不需要的元素 */
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white !important; }
+            .shadow-sm, .shadow-md { box-shadow: none !important; }
+            .border-stone-100, .border-stone-200 { border-color: #e5e5e5 !important; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 800: '#292524', 900: '#1c1917' },
+                        amber: { 600: '#d97706', 700: '#b45309' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-stone-50 text-stone-800 leading-relaxed tracking-wide">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-stone-900 flex items-center gap-2 justify-center md:justify-start">
+                    <span>🇭🇰</span> 香港五日完美行程規劃
+                </h1>
+                <p class="text-sm text-stone-500 mt-1 text-center md:text-left">經典必玩、在地美食與回程休息安排</p>
+            </div>
+            <div class="flex items-center gap-3 w-full md:w-auto justify-center">
+                <div class="text-sm font-medium bg-amber-100 text-amber-800 px-4 py-2 rounded-full shadow-sm">
+                    📅 6/17 - 6/21
+                </div>
+                <!-- 新增：手機分享與儲存 PDF 按鈕 -->
+                <button onclick="shareOrSave()" class="no-print bg-stone-800 hover:bg-stone-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-sm transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    <span class="hidden sm:inline">儲存/分享</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <!-- 行程總覽與數據分析 -->
+        <section id="overview-section" class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                <h2 class="text-xl font-bold text-stone-800 mb-2 border-b-2 border-amber-500 inline-block pb-1">行程總覽與數據分析</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-stone-50 p-5 rounded-xl border border-stone-200">
+                        <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2"><span>✈️</span> 航班資訊</h3>
+                        <ul class="space-y-3 text-stone-700">
+                            <li class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm border-l-4 border-amber-500">
+                                <span class="font-bold text-amber-700">去程 (6/17)</span>
+                                <span>長榮 BR867 | 10:05 TPE ➔ <span class="bg-amber-100 px-1 rounded">12:05 HKG</span></span>
+                            </li>
+                            <li class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm border-l-4 border-amber-500">
+                                <span class="font-bold text-amber-700">回程 (6/21)</span>
+                                <span>長榮 BR870 | <span class="bg-amber-100 px-1 rounded">15:25 HKG</span> ➔ 17:15 TPE</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-stone-50 p-5 rounded-xl border border-stone-200">
+                        <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2"><span>🏨</span> 住宿資訊</h3>
+                        <ul class="space-y-3 text-stone-700">
+                            <li class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm">
+                                <span class="font-bold text-teal-700">Day 1</span>
+                                <span class="font-medium">香港愉景灣酒店</span>
+                            </li>
+                            <li class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm">
+                                <span class="font-bold text-teal-700">Day 2-4</span>
+                                <span class="font-medium">旺角帝盛酒店</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    <div class="bg-white p-4 rounded-xl border border-stone-100 flex flex-col items-center">
+                        <h4 class="text-md font-bold text-stone-700 mb-4 text-center">行程活動類型比例</h4>
+                        <div class="chart-container">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-stone-100 flex flex-col items-center">
+                        <h4 class="text-md font-bold text-stone-700 mb-4 text-center">每日行程豐富度</h4>
+                        <div class="chart-container">
+                            <canvas id="paceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 每日行程探索 -->
+        <section id="daily-itinerary-section" class="space-y-6">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-100">
+                <h2 class="text-xl font-bold text-stone-800 mb-2 border-b-2 border-amber-500 inline-block pb-1">每日行程探索</h2>
+                
+                <div class="flex overflow-x-auto scrollbar-hide gap-3 pb-4 mb-2 border-b border-stone-200 mt-4 no-print" id="day-tabs-container">
+                    <!-- Tabs will be rendered here -->
+                </div>
+
+                <div id="itinerary-content" class="mt-6 transition-opacity duration-500 opacity-100">
+                    <!-- Daily itinerary will be rendered here -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-800 text-stone-400 py-8 text-center text-sm no-print">
+        <p>為您量身打造的香港五日深度資訊儀表板 ✈️</p>
+    </footer>
+
+    <!-- 新增：編輯行程專用 Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-stone-900/50 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="edit-modal-content">
+            <h3 class="text-xl font-bold mb-4 text-stone-800 flex items-center gap-2">✏️ 編輯行程內容</h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-500 mb-1">圖示 (Emoji)</label>
+                        <input type="text" id="edit-type" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-500 mb-1">標籤分類</label>
+                        <input type="text" id="edit-typeLabel" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-500 mb-1">景點/餐廳名稱</label>
+                    <input type="text" id="edit-name" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm font-bold text-stone-800 focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-500 mb-1">營業/起降時間</label>
+                        <input type="text" id="edit-hours" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-500 mb-1">建議行動</label>
+                        <input type="text" id="edit-action" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-500 mb-1">📸 相機位</label>
+                    <input type="text" id="edit-photo" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-500 mb-1">📌 時間叮嚀與攻略 (支援 HTML 標籤)</label>
+                    <textarea id="edit-why" rows="4" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                </div>
+            </div>
+            <div class="mt-6 flex gap-3 justify-end">
+                <button onclick="closeEditModal()" class="px-5 py-2 rounded-lg text-sm font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">取消</button>
+                <button onclick="saveEdit()" class="px-5 py-2 rounded-lg text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-sm">儲存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增：分享與儲存專用 Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-stone-900/50 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity duration-300 no-print">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300" id="share-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2">📲 分享與儲存</h3>
+                <button onclick="closeShareModal()" class="text-stone-400 hover:text-stone-600 font-bold p-1">✕</button>
+            </div>
+            <p class="text-sm text-stone-600 mb-6 leading-relaxed">請選擇您要保留這份專屬行程表的方式：</p>
+            <div class="space-y-3">
+                <button onclick="triggerPrint()" class="w-full flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 text-white py-3 rounded-lg font-bold transition-colors shadow-sm">
+                    🖨️ 儲存為 PDF / 列印
+                </button>
+                <button onclick="copyUrl()" id="copy-btn" class="w-full flex items-center justify-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-200 py-3 rounded-lg font-bold transition-colors shadow-sm">
+                    🔗 複製網址分享
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 手機分享/列印功能 (已修復相容性) ---
+        function shareOrSave() {
+            const modal = document.getElementById('share-modal');
+            const modalContent = document.getElementById('share-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            void modal.offsetWidth; // 強制重繪以觸發動畫
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById('share-modal');
+            const modalContent = document.getElementById('share-modal-content');
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function triggerPrint() {
+            closeShareModal();
+            // 給予一點緩衝時間讓 Modal 消失後再呼叫列印
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+
+        function copyUrl() {
+            // 使用高度相容的複製語法
+            const tempInput = document.createElement('input');
+            tempInput.value = window.location.href;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            // 更新按鈕狀態顯示已複製
+            const copyBtn = document.getElementById('copy-btn');
+            const originalHTML = copyBtn.innerHTML;
+            
+            copyBtn.innerHTML = '✅ 已成功複製網址！';
+            copyBtn.classList.replace('bg-amber-100', 'bg-green-100');
+            copyBtn.classList.replace('text-amber-800', 'text-green-800');
+            copyBtn.classList.replace('border-amber-200', 'border-green-200');
+
+            // 兩秒後恢復原狀
+            setTimeout(() => {
+                copyBtn.innerHTML = '🔗 複製網址分享';
+                copyBtn.classList.replace('bg-green-100', 'bg-amber-100');
+                copyBtn.classList.replace('text-green-800', 'text-amber-800');
+                copyBtn.classList.replace('border-green-200', 'border-amber-200');
+            }, 2500);
+        }
+
+        // --- Travel Itinerary Data ---
+        const itineraryData = {
+            1: {
+                date: "Day 1 (6/17)",
+                title: "抵達香港與大嶼山雲端之旅",
+                concept: "抵港後先在東涌安頓行李並享受纜車景色，傍晚入住度假氛圍十足的愉景灣酒店，悠閒結束第一天。",
+                mapLink: "https://www.google.com/maps/dir/Hong+Kong+International+Airport/Citygate+Outlets/Ngong+Ping+360/Auberge+Discovery+Bay+Hong+Kong/",
+                stops: [
+                    {
+                        type: "✈️", typeLabel: "交通抵達", name: "香港國際機場 (HKG) 抵達",
+                        hours: "12:05 落地 (24小時營運)", tickets: "機票已內含",
+                        photo: "接機大堂 (Arrival Hall)", action: "領取行李 & 入境",
+                        why: "24小時通關，但建議在18:00前完成入境以利後續行程。"
+                    },
+                    {
+                        type: "📍", typeLabel: "購物", name: "東薈城名店倉 (Citygate Outlets)",
+                        hours: "10:00 - 22:00 (全年無休)", tickets: "免費入場",
+                        photo: "商場戶外噴泉區", action: "寄放行李 & 午餐",
+                        why: "大部分櫃位於 22:00 準時打烊，美食廣場則視店家而定。"
+                    },
+                    {
+                        type: "🚠", typeLabel: "體驗", name: "昂坪360纜車 (標準車廂)",
+                        hours: "10:00 - 18:00 (週末至 18:30)", tickets: "大人 $270 / 小孩 $135",
+                        photo: "纜車內(透明底)視野", action: "搭乘觀景",
+                        why: "最後售票時間通常為 17:30，建議預留 1 小時遊玩。"
+                    },
+                    {
+                        type: "🛌", typeLabel: "結束行程", name: "回到香港愉景灣酒店",
+                        hours: "18:30 (飯店服務 24小時)", tickets: "飯店接駁車",
+                        photo: "飯店海景大廳或教堂夜間點燈", action: "入住/休息",
+                        why: "大白灣沙灘與白教堂全天開放，但教堂內部參觀須視婚宴狀況。"
+                    }
+                ]
+            },
+            2: {
+                date: "Day 2 (6/18)",
+                title: "迪士尼奇妙之旅 & 市區飯店進駐",
+                concept: "全日迪士尼瘋玩，晚上離開大嶼山正式進入九龍市區，入住旺角飯店並品嚐在地宵夜。",
+                mapLink: "https://www.google.com/maps/dir/Auberge+Discovery+Bay+Hong+Kong/Hong+Kong+Disneyland/Dorsett+Mongkok/文記車仔麵/",
+                stops: [
+                    {
+                        type: "🎢", typeLabel: "主題樂園", name: "香港迪士尼樂園",
+                        hours: "10:30 - 20:30 (具體視官網公告)", tickets: "大人 $639起 / 小孩 $475起",
+                        photo: "阿德爾王國(Frozen)、城堡光影秀", action: "全日遊玩",
+                        why: "<span class='text-amber-700 font-bold block mb-2 mt-2'>【本日攻略重點】</span><strong>🎡 必玩設施：</strong><ul class='list-disc pl-4 sm:pl-5 mb-3 text-stone-700'><li><span class='font-medium'>魔雪奇緣世界：</span>雪嶺滑雪橇 → 魔雪奇幻之旅 → 森林小天地</li><li><span class='font-medium'>幻想世界：</span>小小世界、小熊維尼歷險之旅、米奇幻想曲、迪士尼魔法書房</li><li><span class='font-medium'>明日世界：</span>鋼鐵人、星際大戰、漫威超級英雄見面</li></ul><strong>🎪 必看表演/活動：</strong><ul class='list-disc pl-4 sm:pl-5 text-stone-700'><li><span class='font-medium'>魔雪奇緣世界(森林小天地)：</span>11:30 - 19:00</li><li><span class='font-medium'>迪士尼好友Live城堡派對：</span>11:30、13:45、15:15</li><li><span class='font-medium'>美國小鎮大街(迪士尼好友巡遊派對)：</span>13:00、17:15</li></ul>"
+                    },
+                    {
+                        type: "🍲", typeLabel: "美食", name: "文記車仔麵 (深水埗)",
+                        hours: "11:00 - 04:00 (凌晨休息短暫)", tickets: "平均消費 $60 - $100",
+                        photo: "傳統車仔麵碗對焦", action: "在地宵夜",
+                        why: "深夜排隊人潮較少，但熱門配料(如瑞士雞翼)可能售罄。"
+                    },
+                    {
+                        type: "🛌", typeLabel: "結束行程", name: "回到旺角帝盛酒店",
+                        hours: "22:30 (前台 24小時)", tickets: "飯店接駁車/港鐵",
+                        photo: "酒店大廳或城市夜景", action: "Check-in 休息",
+                        why: "飯店提供 24 小時服務，若太晚抵達建議先電話告知。"
+                    }
+                ]
+            },
+            3: {
+                date: "Day 3 (6/19)",
+                title: "迪士尼二刷與經典港式點心",
+                concept: "二刷迪士尼補齊遺憾，晚上回旺角區域休息，享受道地港式飲茶。",
+                mapLink: "https://www.google.com/maps/dir/Dorsett+Mongkok/Hong+Kong+Disneyland/一點心(尖沙咀)/Dorsett+Mongkok/",
+                stops: [
+                    {
+                        type: "🎢", typeLabel: "樂園", name: "香港迪士尼樂園 (Day 2)",
+                        hours: "10:30 - 20:30", tickets: "使用 2日門票",
+                        photo: "反斗奇兵大本營、美國小鎮大街", action: "深入遊玩",
+                        why: "部分遊樂設施會提前關閉，請查閱當日 App。<br><br><span class='text-amber-700 font-bold block mb-2'>【本日攻略重點】</span><strong>🎡 必玩設施：</strong><ul class='list-disc pl-4 sm:pl-5 mb-3 text-stone-700'><li><span class='font-medium'>反斗奇兵大本營：</span>轉轉彈弓狗</li><li><span class='font-medium'>迷離莊園：</span>無軌迷離大宅</li><li><span class='font-medium'>灰熊山谷</span></li><li><span class='font-medium'>探險世界：</span>森林河流之旅、Duffy 與好友遊玩屋</li></ul><strong>🎪 必看表演/活動：</strong><ul class='list-disc pl-4 sm:pl-5 text-stone-700'><li><span class='font-medium'>探險世界(獅子王慶典)：</span>12:30、14:30、17:00、18:30</li><li><span class='font-medium'>探險世界(魔海奇緣凱旋慶典)：</span>12:30、14:15、17:00</li><li><span class='font-medium'>美國小鎮大街(星夢光影之旅-星空派對)：</span>21:00</li></ul>"
+                    },
+                    {
+                        type: "🍲", typeLabel: "美食", name: "一點心 (太子店/旺角區)",
+                        hours: "10:00 - 23:00 (週末早 09:30)", tickets: "平均消費 $80 - $150",
+                        photo: "精緻蒸籠點心", action: "精緻晚餐",
+                        why: "22:00 為最後入座/下單時間，逾時不候。"
+                    },
+                    {
+                        type: "🛌", typeLabel: "結束行程", name: "回到旺角帝盛酒店",
+                        hours: "22:00 回宿", tickets: "步行或巴士",
+                        photo: "舒適的床鋪、九龍街景", action: "休息睡覺",
+                        why: "酒店樓下有 7-11 (24小時)，可補給隔日飲用水。"
+                    }
+                ]
+            },
+            4: {
+                date: "Day 4 (6/20)",
+                title: "港式情懷、天星小輪與太平山巔",
+                concept: "香港市區經典一日遊，從尖沙咀早茶到太平山頂夜景，體驗最繁華的香港。",
+                mapLink: "https://www.google.com/maps/dir/Dorsett+Mongkok/紅茶(尖沙咀店)/Star+Ferry+Pier+(Tsim+Sha+Tsui)/Central+Pier/Victoria+Peak/Dorsett+Mongkok/",
+                stops: [
+                    {
+                        type: "☕", typeLabel: "美食", name: "紅茶冰室 (尖沙咀)",
+                        hours: "07:00 - 23:00 (全年無休)", tickets: "平均消費 $50 - $80",
+                        photo: "冰室特點裝潢、熱奶茶", action: "道地早餐",
+                        why: "早餐時段(07:00-11:00)最划算，通常 22:30 停止供餐。"
+                    },
+                    {
+                        type: "⛴️", typeLabel: "交通", name: "天星小輪渡海",
+                        hours: "06:30 - 23:30 (尖中線)", tickets: "大人 $5.0 / 小孩 $2.9 (平日)",
+                        photo: "船窗望向中環大樓", action: "跨海體驗",
+                        why: "晚上 11 點後班次較稀疏，建議 23:00 前抵達碼頭。"
+                    },
+                    {
+                        type: "🌃", typeLabel: "景點", name: "太平山夜景 (纜車+凌霄閣)",
+                        hours: "07:30 - 23:00 (摩天台至 22:00)", tickets: "大人 $148",
+                        photo: "維多利亞港百萬夜景", action: "觀賞夜景",
+                        why: "凌霄閣摩天台 428 最後入場時間為 21:00，請注意時間。"
+                    },
+                    {
+                        type: "🛌", typeLabel: "結束行程", name: "回到旺角帝盛酒店",
+                        hours: "21:30 下山回程", tickets: "從中環搭乘港鐵",
+                        photo: "回味今日照片", action: "休息充電",
+                        why: "太平山纜車下山若遇人潮，排隊時間可能超過 30 分鐘。"
+                    }
+                ]
+            },
+            5: {
+                date: "Day 5 (6/21)",
+                title: "藝文西九與機場告别行程",
+                concept: "參觀世界級博物館 M+，並在機場前享用最後港味，下午搭機返台。",
+                mapLink: "https://www.google.com/maps/dir/Dorsett+Mongkok/M+/正斗粥麵專家(圓方店)/Hong+Kong+International+Airport/",
+                stops: [
+                    {
+                        type: "🥐", typeLabel: "伴手禮", name: "嘉多娜麵包 (佐敦)",
+                        hours: "06:30 - 21:00 (布丁包不定時)", tickets: "麵包 $15 - $25",
+                        photo: "布丁包近照", action: "購買回程點心",
+                        why: "招牌布丁包通常在下午 14:00 後出爐，早上去可能買不到。"
+                    },
+                    {
+                        type: "🏛️", typeLabel: "藝術", name: "M+ 博物館",
+                        hours: "10:00 - 18:00 (週五至 22:00)", tickets: "大人 $120 / 小孩 $60",
+                        photo: "博物館極簡建築背景", action: "藝文巡禮",
+                        why: "週一固定閉館。建議預留至少 2 小時參觀時間。"
+                    },
+                    {
+                        type: "🍲", typeLabel: "美食", name: "正斗粥麵專家 (圓方店)",
+                        hours: "11:00 - 22:30 (最後下單 22:00)", tickets: "平均消費 $100 - $200",
+                        photo: "鮮蝦雲吞麵", action: "午餐",
+                        why: "位於圓方商場內，環境舒適，適合帶行李入座。"
+                    },
+                    {
+                        type: "✈️", typeLabel: "交通啟程", name: "香港國際機場 (HKG)",
+                        hours: "15:25 起飛 (建議 13:25前)", tickets: "機票已內含",
+                        photo: "離境大廳大螢幕", action: "賦歸",
+                        why: "機場店舖多為 07:00 - 23:00 營業，候機時仍可購物。"
+                    }
+                ]
+            }
+        };
+
+        function renderTabs() {
+            const container = document.getElementById('day-tabs-container');
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn flex-shrink-0 px-6 py-3 rounded-full font-bold text-sm border border-stone-200 bg-white text-stone-600 focus:outline-none ${i === 1 ? 'active' : ''}`;
+                btn.innerText = `Day ${i}`;
+                btn.onclick = () => selectDay(i);
+                btn.id = `tab-btn-${i}`;
+                container.appendChild(btn);
+            }
+        }
+
+        function selectDay(dayNumber) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-btn-${dayNumber}`).classList.add('active');
+
+            const contentDiv = document.getElementById('itinerary-content');
+            contentDiv.style.opacity = 0;
+
+            setTimeout(() => {
+                const data = itineraryData[dayNumber];
+                
+                let stopsHTML = data.stops.map((stop, index) => `
+                    <div class="relative pl-8 md:pl-10 pb-8 ${index === data.stops.length - 1 ? '' : 'border-l-2 border-amber-200'} ml-4 md:ml-6 break-inside-avoid">
+                        <div class="absolute w-8 h-8 ${stop.typeLabel === '結束行程' ? 'bg-teal-600' : 'bg-amber-500'} rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md -left-4 top-0 border-4 border-white no-print">
+                            ${stop.type}
+                        </div>
+                        <div class="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-base sm:text-lg font-bold text-stone-800">${stop.type} ${stop.name}</h4>
+                                <span class="text-xs font-semibold ${stop.typeLabel === '結束行程' ? 'bg-teal-100 text-teal-700' : 'bg-stone-200 text-stone-700'} px-2 py-1 rounded no-print">${stop.typeLabel}</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">
+                                    <p class="text-xs text-stone-500 uppercase font-bold tracking-tighter mb-1">⏰ 營業/起降時間</p>
+                                    <p class="text-sm font-medium text-stone-700">${stop.hours}</p>
+                                </div>
+                                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">
+                                    <p class="text-xs text-stone-500 uppercase font-bold tracking-tighter mb-1">💡 建議行動</p>
+                                    <p class="text-sm font-medium text-stone-700">${stop.action}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3 text-sm text-stone-600">
+                                <p><strong class="text-stone-800">📸 相機位：</strong> <span class="text-amber-700">${stop.photo}</span></p>
+                                <div class="mt-4 pt-4 border-t border-stone-100">
+                                    <p><strong class="text-stone-800">📌 時間叮嚀：</strong> ${stop.why}</p>
+                                </div>
+                            </div>
+
+                            <!-- 新增：編輯按鈕 -->
+                            <div class="mt-4 pt-3 border-t border-stone-50 flex justify-end no-print">
+                                <button onclick="openEditModal(${dayNumber}, ${index})" class="text-amber-600 hover:text-amber-800 text-xs font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-amber-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
+                                    編輯此行程
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                contentDiv.innerHTML = `
+                    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-xl sm:text-2xl font-bold text-amber-600 mb-2">${data.date} : ${data.title}</h3>
+                            <p class="text-sm sm:text-base text-stone-700 bg-amber-50 p-4 rounded-lg border border-amber-100 leading-relaxed">${data.concept}</p>
+                        </div>
+                        <a href="${data.mapLink}" target="_blank" class="shrink-0 inline-flex justify-center items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white px-5 py-3 rounded-lg text-sm font-bold transition-colors shadow-md no-print">
+                            <span>🗺️</span> 查看 Google Map 動線
+                        </a>
+                    </div>
+                    <div class="mt-6 sm:mt-8 pt-4">
+                        ${stopsHTML}
+                    </div>
+                `;
+                contentDiv.style.opacity = 1;
+            }, 200); 
+        }
+
+        function initCharts() {
+            const ctxActivity = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctxActivity, {
+                type: 'doughnut',
+                data: {
+                    labels: ['景點', '美食', '交通', '住宿'],
+                    datasets: [{
+                        data: [8, 8, 4, 6], 
+                        backgroundColor: ['#14b8a6', '#f59e0b', '#ef4444', '#0d9488'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    cutout: '65%'
+                }
+            });
+
+            const ctxPace = document.getElementById('paceChart').getContext('2d');
+            new Chart(ctxPace, {
+                type: 'bar',
+                data: {
+                    labels: ['D1', 'D2', 'D3', 'D4', 'D5'],
+                    datasets: [{
+                        label: '活動數',
+                        data: [4, 3, 3, 4, 4], 
+                        backgroundColor: '#d97706',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTabs();
+            selectDay(1);
+            initCharts();
+        });
+
+        // --- 行程編輯功能 ---
+        let currentEditDay = null;
+        let currentEditIndex = null;
+
+        function openEditModal(day, index) {
+            currentEditDay = day;
+            currentEditIndex = index;
+            const stop = itineraryData[day].stops[index];
+
+            document.getElementById('edit-name').value = stop.name || '';
+            document.getElementById('edit-type').value = stop.type || '';
+            document.getElementById('edit-typeLabel').value = stop.typeLabel || '';
+            document.getElementById('edit-hours').value = stop.hours || '';
+            document.getElementById('edit-action').value = stop.action || '';
+            document.getElementById('edit-photo').value = stop.photo || '';
+            document.getElementById('edit-why').value = stop.why || '';
+
+            const modal = document.getElementById('edit-modal');
+            const modalContent = document.getElementById('edit-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            void modal.offsetWidth; // 強制重繪以觸發動畫
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('edit-modal');
+            const modalContent = document.getElementById('edit-modal-content');
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function saveEdit() {
+            if (currentEditDay === null || currentEditIndex === null) return;
+            
+            const stop = itineraryData[currentEditDay].stops[currentEditIndex];
+            stop.name = document.getElementById('edit-name').value;
+            stop.type = document.getElementById('edit-type').value;
+            stop.typeLabel = document.getElementById('edit-typeLabel').value;
+            stop.hours = document.getElementById('edit-hours').value;
+            stop.action = document.getElementById('edit-action').value;
+            stop.photo = document.getElementById('edit-photo').value;
+            stop.why = document.getElementById('edit-why').value;
+
+            closeEditModal();
+            selectDay(currentEditDay); // 重新渲染當前天數，顯示最新資料
+        }
+    </script>
+</body>
+</html>
