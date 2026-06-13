@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        
+
         body {
             font-family: 'Noto Sans TC', sans-serif;
             scroll-behavior: smooth;
@@ -33,6 +34,7 @@
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
+
         .scrollbar-hide {
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -41,12 +43,14 @@
         .tab-btn {
             transition: all 0.3s ease;
         }
+
         .tab-btn.active {
-            background-color: #D97706; 
+            background-color: #D97706;
             color: white;
             transform: scale(1.05);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+
         .tab-btn:not(.active):hover {
             background-color: #FDE68A;
             color: #92400E;
@@ -54,20 +58,52 @@
 
         /* 列印時隱藏不需要的元素 */
         @media print {
-            .no-print { display: none !important; }
-            body { background-color: white !important; }
-            .shadow-sm, .shadow-md { box-shadow: none !important; }
-            .border-stone-100, .border-stone-200 { border-color: #e5e5e5 !important; }
-            #app-container { display: block !important; }
-            #login-container { display: none !important; }
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background-color: white !important;
+            }
+
+            .shadow-sm,
+            .shadow-md {
+                box-shadow: none !important;
+            }
+
+            .border-stone-100,
+            .border-stone-200 {
+                border-color: #e5e5e5 !important;
+            }
+
+            #app-container {
+                display: block !important;
+            }
+
+            #login-container {
+                display: none !important;
+            }
         }
 
         /* 密碼錯誤震動動畫 */
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-5px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(5px);
+            }
         }
+
         .shake {
             animation: shake 0.4s ease-in-out;
         }
@@ -85,25 +121,29 @@
         }
     </script>
 </head>
+
 <body class="bg-stone-50 text-stone-800 leading-relaxed tracking-wide h-screen overflow-hidden" id="body-wrap">
 
     <!-- 登入畫面 -->
-    <div id="login-container" class="absolute inset-0 z-[200] flex flex-col items-center justify-center p-4 bg-stone-50 transition-opacity duration-500">
+    <div id="login-container"
+        class="absolute inset-0 z-[200] flex flex-col items-center justify-center p-4 bg-stone-50 transition-opacity duration-500">
         <div class="bg-white p-8 md:p-10 rounded-2xl shadow-xl max-w-md w-full border border-stone-100 text-center">
             <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span class="text-3xl">✈️</span>
             </div>
             <h2 class="text-2xl font-bold text-stone-800 mb-2">專屬行程邀請函</h2>
             <p class="text-stone-500 text-sm mb-8 leading-relaxed">請輸入存取密碼以解鎖您的香港五日完美行程規劃。</p>
-            
-            <div id="password-wrapper" class="relative transition-transform">
-                <input type="password" id="password-input" placeholder="請輸入 4 位數密碼" 
-                       class="w-full text-center text-lg tracking-widest border-2 border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all"
-                       onkeypress="if(event.key === 'Enter') checkPassword()">
-            </div>
-            <p id="login-error" class="text-red-500 text-xs font-bold mt-2 h-4 opacity-0 transition-opacity">密碼錯誤，請重新輸入</p>
 
-            <button onclick="checkPassword()" class="w-full mt-6 bg-stone-800 hover:bg-stone-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md">
+            <div id="password-wrapper" class="relative transition-transform">
+                <input type="password" id="password-input" placeholder="請輸入 4 位數密碼"
+                    class="w-full text-center text-lg tracking-widest border-2 border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all"
+                    onkeypress="if(event.key === 'Enter') checkPassword()">
+            </div>
+            <p id="login-error" class="text-red-500 text-xs font-bold mt-2 h-4 opacity-0 transition-opacity">密碼錯誤，請重新輸入
+            </p>
+
+            <button onclick="checkPassword()"
+                class="w-full mt-6 bg-stone-800 hover:bg-stone-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md">
                 解鎖行程
             </button>
         </div>
@@ -111,12 +151,15 @@
     </div>
 
     <!-- 主要應用程式容器 (預設隱藏) -->
-    <div id="app-container" class="opacity-0 pointer-events-none h-full overflow-y-auto transition-opacity duration-700">
+    <div id="app-container"
+        class="opacity-0 pointer-events-none h-full overflow-y-auto transition-opacity duration-700">
         <!-- Header -->
         <header class="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div
+                class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-stone-900 flex items-center gap-2 justify-center md:justify-start">
+                    <h1
+                        class="text-2xl md:text-3xl font-bold text-stone-900 flex items-center gap-2 justify-center md:justify-start">
                         <span>🇭🇰</span> 香港五日完美行程規劃
                     </h1>
                     <p class="text-sm text-stone-500 mt-1 text-center md:text-left">經典必玩、在地美食與回程休息安排</p>
@@ -126,10 +169,14 @@
                         📅 6/17 - 6/21
                     </div>
                     <!-- 手機分享與儲存 PDF 按鈕 -->
-                    <button onclick="shareOrSave()" class="no-print bg-stone-800 hover:bg-stone-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-sm transition-colors flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    <button onclick="shareOrSave()"
+                        class="no-print bg-stone-800 hover:bg-stone-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-sm transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            viewBox="0 0 16 16">
+                            <path
+                                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                            <path
+                                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
                         </svg>
                         <span class="hidden sm:inline">儲存/分享</span>
                     </button>
@@ -141,30 +188,39 @@
             <!-- 行程總覽與數據分析 -->
             <section id="overview-section" class="space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                    <h2 class="text-xl font-bold text-stone-800 mb-2 border-b-2 border-amber-500 inline-block pb-1">行程總覽與數據分析</h2>
-                    
+                    <h2 class="text-xl font-bold text-stone-800 mb-2 border-b-2 border-amber-500 inline-block pb-1">
+                        行程總覽與數據分析</h2>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                         <div class="bg-stone-50 p-5 rounded-xl border border-stone-200">
-                            <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2"><span>✈️</span> 航班資訊</h3>
+                            <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2"><span>✈️</span>
+                                航班資訊</h3>
                             <ul class="space-y-3 text-stone-700">
-                                <li class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm border-l-4 border-amber-500">
+                                <li
+                                    class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm border-l-4 border-amber-500">
                                     <span class="font-bold text-amber-700">去程 (6/17)</span>
-                                    <span>長榮 BR867 | 10:05 TPE ➔ <span class="bg-amber-100 px-1 rounded">12:05 HKG</span></span>
+                                    <span>長榮 BR867 | 10:05 TPE ➔ <span class="bg-amber-100 px-1 rounded">12:05
+                                            HKG</span></span>
                                 </li>
-                                <li class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm border-l-4 border-amber-500">
+                                <li
+                                    class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm border-l-4 border-amber-500">
                                     <span class="font-bold text-amber-700">回程 (6/21)</span>
-                                    <span>長榮 BR870 | <span class="bg-amber-100 px-1 rounded">15:25 HKG</span> ➔ 17:15 TPE</span>
+                                    <span>長榮 BR870 | <span class="bg-amber-100 px-1 rounded">15:25 HKG</span> ➔ 17:15
+                                        TPE</span>
                                 </li>
                             </ul>
                         </div>
                         <div class="bg-stone-50 p-5 rounded-xl border border-stone-200">
-                            <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2"><span>🏨</span> 住宿資訊</h3>
+                            <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2"><span>🏨</span>
+                                住宿資訊</h3>
                             <ul class="space-y-3 text-stone-700">
-                                <li class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm">
+                                <li
+                                    class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm">
                                     <span class="font-bold text-teal-700">Day 1</span>
                                     <span class="font-medium">香港愉景灣酒店</span>
                                 </li>
-                                <li class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm">
+                                <li
+                                    class="flex flex-col sm:flex-row sm:justify-between p-3 bg-white rounded-lg shadow-sm">
                                     <span class="font-bold text-teal-700">Day 2-4</span>
                                     <span class="font-medium">旺角帝盛酒店</span>
                                 </li>
@@ -192,9 +248,11 @@
             <!-- 每日行程探索 -->
             <section id="daily-itinerary-section" class="space-y-6">
                 <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-100">
-                    <h2 class="text-xl font-bold text-stone-800 mb-2 border-b-2 border-amber-500 inline-block pb-1">每日行程探索</h2>
-                    
-                    <div class="flex overflow-x-auto scrollbar-hide gap-3 pb-4 mb-2 border-b border-stone-200 mt-4 no-print" id="day-tabs-container">
+                    <h2 class="text-xl font-bold text-stone-800 mb-2 border-b-2 border-amber-500 inline-block pb-1">
+                        每日行程探索</h2>
+
+                    <div class="flex overflow-x-auto scrollbar-hide gap-3 pb-4 mb-2 border-b border-stone-200 mt-4 no-print"
+                        id="day-tabs-container">
                         <!-- Tabs will be rendered here -->
                     </div>
 
@@ -211,18 +269,22 @@
     </div> <!-- end app-container -->
 
     <!-- 分享與儲存專用 Modal -->
-    <div id="share-modal" class="fixed inset-0 bg-stone-900/50 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity duration-300 no-print">
-        <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300" id="share-modal-content">
+    <div id="share-modal"
+        class="fixed inset-0 bg-stone-900/50 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity duration-300 no-print">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300"
+            id="share-modal-content">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2">📲 分享與儲存</h3>
                 <button onclick="closeShareModal()" class="text-stone-400 hover:text-stone-600 font-bold p-1">✕</button>
             </div>
             <p class="text-sm text-stone-600 mb-6 leading-relaxed">請選擇您要保留這份專屬行程表的方式：</p>
             <div class="space-y-3">
-                <button onclick="triggerPrint()" class="w-full flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 text-white py-3 rounded-lg font-bold transition-colors shadow-sm">
+                <button onclick="triggerPrint()"
+                    class="w-full flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 text-white py-3 rounded-lg font-bold transition-colors shadow-sm">
                     🖨️ 儲存為 PDF / 列印
                 </button>
-                <button onclick="copyUrl()" id="copy-btn" class="w-full flex items-center justify-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-200 py-3 rounded-lg font-bold transition-colors shadow-sm">
+                <button onclick="copyUrl()" id="copy-btn"
+                    class="w-full flex items-center justify-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-200 py-3 rounded-lg font-bold transition-colors shadow-sm">
                     🔗 複製網址分享
                 </button>
             </div>
@@ -230,72 +292,121 @@
     </div>
 
     <!-- 編輯行程專用 Modal -->
-    <div id="edit-modal" class="fixed inset-0 bg-stone-900/50 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity duration-300 no-print">
-        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="edit-modal-content">
+    <div id="edit-modal"
+        class="fixed inset-0 bg-stone-900/50 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity duration-300 no-print">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300"
+            id="edit-modal-content">
             <h3 class="text-xl font-bold mb-4 text-stone-800 flex items-center gap-2">✏️ 編輯行程內容</h3>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-stone-500 mb-1">圖示 (Emoji)</label>
-                        <input type="text" id="edit-type" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="text" id="edit-type"
+                            class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-stone-500 mb-1">標籤分類</label>
-                        <input type="text" id="edit-typeLabel" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="text" id="edit-typeLabel"
+                            class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-stone-500 mb-1">景點/餐廳名稱</label>
-                    <input type="text" id="edit-name" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm font-bold text-stone-800 focus:ring-2 focus:ring-amber-500 outline-none">
+                    <input type="text" id="edit-name"
+                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm font-bold text-stone-800 focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-stone-500 mb-1">營業/起降時間</label>
-                        <input type="text" id="edit-hours" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="text" id="edit-hours"
+                            class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-stone-500 mb-1">建議行動</label>
-                        <input type="text" id="edit-action" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="text" id="edit-action"
+                            class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-stone-500 mb-1">📸 相機位</label>
-                    <input type="text" id="edit-photo" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    <input type="text" id="edit-photo"
+                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-stone-500 mb-1">📌 時間叮嚀與攻略 (支援 HTML 標籤)</label>
-                    <textarea id="edit-why" rows="4" class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                    <textarea id="edit-why" rows="4"
+                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                 </div>
             </div>
             <div class="mt-6 flex gap-3 justify-end">
-                <button onclick="closeEditModal()" class="px-5 py-2 rounded-lg text-sm font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">取消</button>
-                <button onclick="saveEdit()" class="px-5 py-2 rounded-lg text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-sm">儲存修改</button>
+                <button onclick="closeEditModal()"
+                    class="px-5 py-2 rounded-lg text-sm font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">取消</button>
+                <button onclick="saveEdit()"
+                    class="px-5 py-2 rounded-lg text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-sm">儲存修改</button>
             </div>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        // --- Firebase Configuration ---
+        // NOTE: Please replace these placeholder values with your actual Firebase project configuration credentials.
+        // You can find them in your Firebase Console -> Project Settings -> General -> Your apps -> Web app.
+        const firebaseConfig = {
+            apiKey: "AIzaSyAH7si2LdTlDNSOa8JbwuNO29MSpr4s7rM",
+            authDomain: "hk-trip-2026-88376.firebaseapp.com",
+            databaseURL: "https://hk-trip-2026-88376-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "hk-trip-2026-88376",
+            storageBucket: "hk-trip-2026-88376.firebasestorage.app",
+            messagingSenderId: "562630604602",
+            appId: "1:562630604602:web:7c30dd2d0bd3e991bc8203"
+        };
+
+
+        let db = null;
+        let isFirebaseEnabled = false;
+        let isLoggedIn = false;
+
+        const isPlaceholderConfig = !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_");
+
+        if (!isPlaceholderConfig) {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                isFirebaseEnabled = true;
+                console.log("Firebase initialized successfully.");
+            } catch (error) {
+                console.error("Failed to initialize Firebase:", error);
+            }
+        } else {
+            console.warn("Firebase config is using placeholder values. Running in local-only mode. Edits will not be saved permanently or shared.");
+        }
+
         // --- 密碼保護功能 ---
         const CORRECT_PASSWORD = "1004";
-        
+
         function checkPassword() {
             const input = document.getElementById('password-input').value;
             const errorMsg = document.getElementById('login-error');
             const wrapper = document.getElementById('password-wrapper');
-            
+
             if (input === CORRECT_PASSWORD) {
                 // 登入成功：隱藏登入畫面，顯示主應用
                 const loginContainer = document.getElementById('login-container');
                 const appContainer = document.getElementById('app-container');
                 const bodyWrap = document.getElementById('body-wrap');
-                
+
                 loginContainer.classList.add('opacity-0');
-                
+
                 setTimeout(() => {
                     loginContainer.style.display = 'none';
                     appContainer.classList.remove('opacity-0', 'pointer-events-none');
                     bodyWrap.classList.remove('h-screen', 'overflow-hidden'); // 解除 body 的高度限制與捲動鎖定
-                    
+
+                    isLoggedIn = true;
+
                     // 初始化應用內容
                     renderTabs();
                     selectDay(1);
@@ -306,10 +417,10 @@
                 wrapper.classList.remove('shake');
                 void wrapper.offsetWidth; // 觸發重繪
                 wrapper.classList.add('shake');
-                
+
                 errorMsg.classList.remove('opacity-0');
                 document.getElementById('password-input').value = '';
-                
+
                 setTimeout(() => {
                     errorMsg.classList.add('opacity-0');
                 }, 3000);
@@ -322,7 +433,7 @@
             const modalContent = document.getElementById('share-modal-content');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            void modal.offsetWidth; 
+            void modal.offsetWidth;
             modal.classList.remove('opacity-0');
             modalContent.classList.remove('scale-95');
             modalContent.classList.add('scale-100');
@@ -388,7 +499,7 @@
             const modalContent = document.getElementById('edit-modal-content');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            void modal.offsetWidth; 
+            void modal.offsetWidth;
             modal.classList.remove('opacity-0');
             modalContent.classList.remove('scale-95');
             modalContent.classList.add('scale-100');
@@ -406,9 +517,9 @@
             }, 300);
         }
 
-        function saveEdit() {
+        async function saveEdit() {
             if (currentEditDay === null || currentEditIndex === null) return;
-            
+
             const stop = itineraryData[currentEditDay].stops[currentEditIndex];
             stop.name = document.getElementById('edit-name').value;
             stop.type = document.getElementById('edit-type').value;
@@ -420,6 +531,19 @@
 
             closeEditModal();
             selectDay(currentEditDay);
+            initCharts();
+
+            // Write back to Firestore if enabled
+            if (isFirebaseEnabled && db) {
+                try {
+                    const docRef = doc(db, "trips", "hk_trip");
+                    await setDoc(docRef, { itinerary: itineraryData });
+                    console.log("Itinerary data saved to Firebase successfully.");
+                } catch (err) {
+                    console.error("Error saving data to Firebase:", err);
+                    alert("同步至 Firebase 失敗，請檢查網路連線或主控台日誌。");
+                }
+            }
         }
 
         // --- Travel Itinerary Data ---
@@ -589,14 +713,16 @@
 
         function selectDay(dayNumber) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`tab-btn-${dayNumber}`).classList.add('active');
+            const tabBtn = document.getElementById(`tab-btn-${dayNumber}`);
+            if (tabBtn) tabBtn.classList.add('active');
 
             const contentDiv = document.getElementById('itinerary-content');
             contentDiv.style.opacity = 0;
 
             setTimeout(() => {
                 const data = itineraryData[dayNumber];
-                
+                if (!data) return;
+
                 let stopsHTML = data.stops.map((stop, index) => `
                     <div class="relative pl-8 md:pl-10 pb-8 ${index === data.stops.length - 1 ? '' : 'border-l-2 border-amber-200'} ml-4 md:ml-6 break-inside-avoid">
                         <div class="absolute w-8 h-8 ${stop.typeLabel === '結束行程' ? 'bg-teal-600' : 'bg-amber-500'} rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md -left-4 top-0 border-4 border-white no-print">
@@ -652,7 +778,38 @@
                     </div>
                 `;
                 contentDiv.style.opacity = 1;
-            }, 200); 
+            }, 200);
+        }
+
+        // --- Charts Helper Functions ---
+        function calculateChartData() {
+            let scenic = 0, food = 0, transport = 0, lodging = 0;
+            const scenicEmojis = ['📍', '🚠', '🎢', '🌃', '🏛️'];
+            const foodEmojis = ['🍲', '☕', '🥐'];
+            const transportEmojis = ['✈️', '⛴️'];
+            const lodgingEmojis = ['🛌'];
+
+            for (let day in itineraryData) {
+                if (itineraryData[day] && itineraryData[day].stops) {
+                    itineraryData[day].stops.forEach(stop => {
+                        const type = stop.type;
+                        if (scenicEmojis.includes(type)) scenic++;
+                        else if (foodEmojis.includes(type)) food++;
+                        else if (transportEmojis.includes(type)) transport++;
+                        else if (lodgingEmojis.includes(type)) lodging++;
+                        else scenic++; // fallback
+                    });
+                }
+            }
+            return [scenic, food, transport, lodging];
+        }
+
+        function calculatePaceData() {
+            const data = [];
+            for (let i = 1; i <= 5; i++) {
+                data.push(itineraryData[i] && itineraryData[i].stops ? itineraryData[i].stops.length : 0);
+            }
+            return data;
         }
 
         // --- Charts 初始化 ---
@@ -667,7 +824,7 @@
                 data: {
                     labels: ['景點', '美食', '交通', '住宿'],
                     datasets: [{
-                        data: [8, 8, 4, 6], 
+                        data: calculateChartData(),
                         backgroundColor: ['#14b8a6', '#f59e0b', '#ef4444', '#0d9488'],
                         borderWidth: 0
                     }]
@@ -688,7 +845,7 @@
                     labels: ['D1', 'D2', 'D3', 'D4', 'D5'],
                     datasets: [{
                         label: '活動數',
-                        data: [4, 3, 3, 4, 4], 
+                        data: calculatePaceData(),
                         backgroundColor: '#d97706',
                         borderRadius: 6
                     }]
@@ -701,6 +858,63 @@
                 }
             });
         }
+
+        // --- Firebase Sync initialization ---
+        function initFirebaseSync() {
+            if (!isFirebaseEnabled || !db) return;
+
+            const docRef = doc(db, "trips", "hk_trip");
+
+            // Subscribe to real-time updates
+            onSnapshot(docRef, async (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data && data.itinerary) {
+                        // Update local itineraryData object
+                        Object.keys(itineraryData).forEach(key => delete itineraryData[key]);
+                        Object.assign(itineraryData, data.itinerary);
+
+                        console.log("Itinerary data synced from Firebase.");
+
+                        // Only refresh UI if user is already logged in/unlocked
+                        if (isLoggedIn) {
+                            const activeTab = document.querySelector('.tab-btn.active');
+                            const currentDay = activeTab ? parseInt(activeTab.id.replace('tab-btn-', '')) : 1;
+                            selectDay(currentDay);
+                            initCharts();
+                        }
+                    }
+                } else {
+                    console.log("No document found. Initializing database with default itinerary data...");
+                    try {
+                        await setDoc(docRef, { itinerary: itineraryData });
+                        console.log("Database initialized successfully with default data.");
+                    } catch (err) {
+                        console.error("Error initializing database:", err);
+                    }
+                }
+            }, (error) => {
+                console.error("Error listening to database updates:", error);
+            });
+        }
+
+        // Expose functions to window since they are inside an ES module scope
+        window.checkPassword = checkPassword;
+        window.shareOrSave = shareOrSave;
+        window.closeShareModal = closeShareModal;
+        window.triggerPrint = triggerPrint;
+        window.copyUrl = copyUrl;
+        window.openEditModal = openEditModal;
+        window.closeEditModal = closeEditModal;
+        window.saveEdit = saveEdit;
+        window.selectDay = selectDay;
+        window.renderTabs = renderTabs;
+
+        // Start Firebase sync immediately on page load
+        if (isFirebaseEnabled) {
+            initFirebaseSync();
+        }
     </script>
 </body>
+
 </html>
