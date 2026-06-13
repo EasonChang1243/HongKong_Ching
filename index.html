@@ -296,7 +296,7 @@
         class="fixed inset-0 bg-stone-900/50 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity duration-300 no-print">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300"
             id="edit-modal-content">
-            <h3 class="text-xl font-bold mb-4 text-stone-800 flex items-center gap-2">✏️ 編輯行程內容</h3>
+            <h3 class="text-xl font-bold mb-4 text-stone-800 flex items-center gap-2" id="modal-title">✏️ 編輯行程內容</h3>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -331,18 +331,22 @@
                     <label class="block text-xs font-bold text-stone-500 mb-1">📸 相機位</label>
                     <input type="text" id="edit-photo"
                         class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                </div>
+                    </div>
                 <div>
                     <label class="block text-xs font-bold text-stone-500 mb-1">📌 時間叮嚀與攻略 (支援 HTML 標籤)</label>
                     <textarea id="edit-why" rows="4"
                         class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                 </div>
             </div>
-            <div class="mt-6 flex gap-3 justify-end">
-                <button onclick="closeEditModal()"
-                    class="px-5 py-2 rounded-lg text-sm font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">取消</button>
-                <button onclick="saveEdit()"
-                    class="px-5 py-2 rounded-lg text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-sm">儲存修改</button>
+            <div class="mt-6 flex gap-3 justify-between">
+                <button onclick="deleteStop()" id="modal-delete-btn"
+                    class="px-5 py-2 rounded-lg text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors">刪除此行程</button>
+                <div class="flex gap-3">
+                    <button onclick="closeEditModal()"
+                        class="px-5 py-2 rounded-lg text-sm font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">取消</button>
+                    <button onclick="saveEdit()" id="modal-submit-btn"
+                        class="px-5 py-2 rounded-lg text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-sm">儲存修改</button>
+                </div>
             </div>
         </div>
     </div>
@@ -478,11 +482,48 @@
             }, 2500);
         }
 
-        // --- 行程編輯功能 ---
+        // --- 行程編輯與管理功能 ---
         let currentEditDay = null;
         let currentEditIndex = null;
+        let modalMode = 'edit'; // 'edit' or 'add'
+
+        function openModal() {
+            const modal = document.getElementById('edit-modal');
+            const modalContent = document.getElementById('edit-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+
+        function openAddModal(day) {
+            modalMode = 'add';
+            currentEditDay = day;
+            currentEditIndex = null;
+
+            // Reset fields
+            document.getElementById('edit-name').value = '';
+            document.getElementById('edit-type').value = '📍';
+            document.getElementById('edit-typeLabel').value = '景點';
+            document.getElementById('edit-hours').value = '';
+            document.getElementById('edit-action').value = '';
+            document.getElementById('edit-photo').value = '';
+            document.getElementById('edit-why').value = '';
+
+            // Update modal text
+            document.getElementById('modal-title').innerText = '➕ 新增行程項目';
+            document.getElementById('modal-submit-btn').innerText = '確定新增';
+            
+            // Hide delete button
+            document.getElementById('modal-delete-btn').classList.add('hidden');
+
+            openModal();
+        }
 
         function openEditModal(day, index) {
+            modalMode = 'edit';
             currentEditDay = day;
             currentEditIndex = index;
             const stop = itineraryData[day].stops[index];
@@ -495,14 +536,14 @@
             document.getElementById('edit-photo').value = stop.photo || '';
             document.getElementById('edit-why').value = stop.why || '';
 
-            const modal = document.getElementById('edit-modal');
-            const modalContent = document.getElementById('edit-modal-content');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            modalContent.classList.remove('scale-95');
-            modalContent.classList.add('scale-100');
+            // Update modal text
+            document.getElementById('modal-title').innerText = '✏️ 編輯行程內容';
+            document.getElementById('modal-submit-btn').innerText = '儲存修改';
+            
+            // Show delete button
+            document.getElementById('modal-delete-btn').classList.remove('hidden');
+
+            openModal();
         }
 
         function closeEditModal() {
@@ -518,9 +559,16 @@
         }
 
         async function saveEdit() {
-            if (currentEditDay === null || currentEditIndex === null) return;
+            if (currentEditDay === null) return;
 
-            const stop = itineraryData[currentEditDay].stops[currentEditIndex];
+            let stop;
+            if (modalMode === 'edit') {
+                if (currentEditIndex === null) return;
+                stop = itineraryData[currentEditDay].stops[currentEditIndex];
+            } else {
+                stop = {};
+            }
+
             stop.name = document.getElementById('edit-name').value;
             stop.type = document.getElementById('edit-type').value;
             stop.typeLabel = document.getElementById('edit-typeLabel').value;
@@ -528,6 +576,10 @@
             stop.action = document.getElementById('edit-action').value;
             stop.photo = document.getElementById('edit-photo').value;
             stop.why = document.getElementById('edit-why').value;
+
+            if (modalMode === 'add') {
+                itineraryData[currentEditDay].stops.push(stop);
+            }
 
             closeEditModal();
             selectDay(currentEditDay);
@@ -542,6 +594,54 @@
                 } catch (err) {
                     console.error("Error saving data to Firebase:", err);
                     alert("同步至 Firebase 失敗，請檢查網路連線或主控台日誌。");
+                }
+            }
+        }
+
+        async function deleteStop() {
+            if (currentEditDay === null || currentEditIndex === null) return;
+            if (!confirm("確定要刪除此行程項目嗎？")) return;
+
+            itineraryData[currentEditDay].stops.splice(currentEditIndex, 1);
+
+            closeEditModal();
+            selectDay(currentEditDay);
+            initCharts();
+
+            // Write back to Firestore if enabled
+            if (isFirebaseEnabled && db) {
+                try {
+                    const docRef = doc(db, "trips", "hk_trip");
+                    await setDoc(docRef, { itinerary: itineraryData });
+                    console.log("Itinerary data deleted from Firebase.");
+                } catch (err) {
+                    console.error("Error saving data to Firebase:", err);
+                }
+            }
+        }
+
+        async function moveStop(day, index, direction) {
+            const stops = itineraryData[day].stops;
+            const targetIndex = index + direction;
+
+            if (targetIndex < 0 || targetIndex >= stops.length) return;
+
+            // Swap
+            const temp = stops[index];
+            stops[index] = stops[targetIndex];
+            stops[targetIndex] = temp;
+
+            selectDay(day);
+            initCharts();
+
+            // Write back to Firestore if enabled
+            if (isFirebaseEnabled && db) {
+                try {
+                    const docRef = doc(db, "trips", "hk_trip");
+                    await setDoc(docRef, { itinerary: itineraryData });
+                    console.log("Itinerary order updated in Firebase.");
+                } catch (err) {
+                    console.error("Error saving data to Firebase:", err);
                 }
             }
         }
@@ -642,7 +742,7 @@
                         type: "☕", typeLabel: "美食", name: "紅茶冰室 (尖沙咀)",
                         hours: "07:00 - 23:00 (全年無休)", tickets: "平均消費 $50 - $80",
                         photo: "冰室特點裝潢、熱奶茶", action: "道地早餐",
-                        why: "早餐時段(07:00-11:00)最划算，通常 22:30 停止供餐。"
+                        why: "早餐時段(07:00-11:00)最判斷，通常 22:30 停止供餐。"
                     },
                     {
                         type: "⛴️", typeLabel: "交通", name: "天星小輪渡海",
@@ -752,8 +852,16 @@
                                 </div>
                             </div>
 
-                            <!-- 編輯按鈕 -->
-                            <div class="mt-4 pt-3 border-t border-stone-50 flex justify-end no-print">
+                            <!-- 編輯與排序按鈕 -->
+                            <div class="mt-4 pt-3 border-t border-stone-50 flex justify-between items-center no-print">
+                                <div class="flex gap-2">
+                                    <button onclick="moveStop(${dayNumber}, ${index}, -1)" ${index === 0 ? 'disabled' : ''} class="text-stone-500 hover:text-stone-800 disabled:opacity-30 disabled:pointer-events-none text-xs font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-stone-100">
+                                        ▲ 往上
+                                    </button>
+                                    <button onclick="moveStop(${dayNumber}, ${index}, 1)" ${index === data.stops.length - 1 ? 'disabled' : ''} class="text-stone-500 hover:text-stone-800 disabled:opacity-30 disabled:pointer-events-none text-xs font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-stone-100">
+                                        ▼ 往下
+                                    </button>
+                                </div>
                                 <button onclick="openEditModal(${dayNumber}, ${index})" class="text-amber-600 hover:text-amber-800 text-xs font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-amber-50">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
                                     編輯此行程
@@ -775,6 +883,12 @@
                     </div>
                     <div class="mt-6 sm:mt-8 pt-4">
                         ${stopsHTML}
+                        <!-- 新增行程項目按鈕 -->
+                        <div class="mt-8 ml-4 md:ml-6 flex justify-center no-print">
+                            <button onclick="openAddModal(${dayNumber})" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-colors flex items-center gap-2">
+                                <span>➕</span> 新增行程項目
+                            </button>
+                        </div>
                     </div>
                 `;
                 contentDiv.style.opacity = 1;
@@ -804,6 +918,7 @@
             return [scenic, food, transport, lodging];
         }
 
+        // --- Charts Helper Functions ---
         function calculatePaceData() {
             const data = [];
             for (let i = 1; i <= 5; i++) {
@@ -905,8 +1020,11 @@
         window.triggerPrint = triggerPrint;
         window.copyUrl = copyUrl;
         window.openEditModal = openEditModal;
+        window.openAddModal = openAddModal;
         window.closeEditModal = closeEditModal;
         window.saveEdit = saveEdit;
+        window.deleteStop = deleteStop;
+        window.moveStop = moveStop;
         window.selectDay = selectDay;
         window.renderTabs = renderTabs;
 
